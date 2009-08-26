@@ -30,10 +30,8 @@
 #define IDC_BTN_ALL                     1015
 #define IDC_EDIT_FILE                   1016
 #define IDC_BTN_BROWSE1                 1017
-#define IDC_EDIT_PDB                    1018
-#define IDC_BTN_BROWSE2                 1019
-#define IDC_BTN_DOWNLOAD                1020
-#define IDC_EDIT_INFO                   1021
+#define IDC_BTN_DOWNLOAD                1018
+#define IDC_EDIT_INFO                   1019
 #define ID_OPEN                         40001
 #define ID_SAVE                         40002
 #define ID_COPY                         40003
@@ -52,7 +50,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        110
 #define _APS_NEXT_COMMAND_VALUE         40012
-#define _APS_NEXT_CONTROL_VALUE         1022
+#define _APS_NEXT_CONTROL_VALUE         1020
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

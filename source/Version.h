@@ -10,13 +10,18 @@
 #ifndef PDBEXP_VERSION
 #define PDBEXP_VERSION
 
-#define PDBEXP_WNDCAPTION           _T("PDB Explorer v1.02.035")
+#define PDBEXP_WNDCAPTION           _T("PDB Explorer v1.03.039")
 
 ///////////////////////////////////////////////////////////////////////////////
 // 升级记录
-// V1.02.036 - 2008.11.19
-//           * PDL Version: 51 。
-//           * 工程更新为 VS2008 。
+// v1.03.039 - 2009.04.15
+//           * PDL Version: 78
+//           * 优化了代码的大小。
+//           * 优化了下载 PDB 文件功能的用户体验。
+//           * 对 PE 映像中取得的 PDB 文件名进行了路径判断。
+// v1.02.035 - 2008.11.19
+//           * PDL Version: 51
+//           * 工程更新为 VS2008。
 //           * 解决 DIA 库版本不兼容的问题。
 //           * 可自由下载 PDB 文件。
 //           * 修正了文件重复拖放导致程序崩溃的 bug 。
