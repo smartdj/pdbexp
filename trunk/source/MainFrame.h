@@ -40,6 +40,7 @@ private:
 private:
     int OnCreate(LPCREATESTRUCT lpCreateStruct, BOOL& bHandled);
     void OnDestroy(BOOL& bHandled);
+    void OnDropFiles(HDROP hDropInfo, BOOL& bHandled);
     void OnSize(UINT nType, int cx, int cy, BOOL& bHandled);
 private:
     void ProcessCommandMessage(WORD wNotifyCode, WORD wID, HWND hWndCtrl,

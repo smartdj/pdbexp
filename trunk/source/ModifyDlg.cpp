@@ -118,6 +118,7 @@ void CModifyDlg::ProcessCommandMessage(WORD wNotifyCode, WORD wID,
 {
     switch (wID)
     {
+    case IDCANCEL:
     case IDOK:          OnClose(bHandled);      break;
     case IDC_BTN_ALL:   OnBtnAll();             break;
     case IDC_BTN_COPY:  OnBtnCopy();            break;

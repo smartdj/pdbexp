@@ -293,7 +293,11 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct, BOOL& bHandled)
         return -1;
     }
 
+    // 文件拖放支持
+    DragAcceptFiles(m_hWnd, TRUE);
+
     m_status.SetText(0, _T("未打开文件"));
+    m_vDetail.EnableWindow(FALSE);
     CheckCommandState();
     return 0;
 }
@@ -301,6 +305,32 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct, BOOL& bHandled)
 void CMainFrame::OnDestroy(BOOL& bHandled)
 {
     ::PostQuitMessage(0);
+}
+
+void CMainFrame::OnDropFiles(HDROP hDropInfo, BOOL& bHandled)
+{
+    WCHAR szFile[MAX_PATH];
+    if (0 < DragQueryFileW(hDropInfo, 0, szFile, MAX_PATH))
+    {
+        ClearExpItem();
+        m_vDetail.EnableWindow();
+        m_vDetail.Clear();
+        if (m_dia.OpenPDB(szFile))
+        {
+            m_status.SetText(0, _T("正在扫描..."));
+            m_status.SetText(1, szFile);
+            Refresh();
+            CheckCommandState();
+            LString str;
+            str.Format(_T("共有 %d 个符号"), m_cbSymbols.GetCount());
+            m_status.SetText(0, str);
+        }
+        else
+        {
+            MessageBox(_T("打开PDB文件失败！"), _T("错误"), MB_ICONSTOP);
+        }
+    }
+    DragFinish(hDropInfo);
 }
 
 void CMainFrame::OnSize(UINT nType, int cx, int cy, BOOL& bHandled)
@@ -435,6 +465,7 @@ void CMainFrame::OnOpen(void)
     if (dlg.DoModal(m_hWnd))
     {
         ClearExpItem();
+        m_vDetail.EnableWindow();
         m_vDetail.Clear();
         if (m_dia.OpenPDB(dlg.m_szFileName))
         {
