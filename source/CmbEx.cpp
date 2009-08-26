@@ -7,28 +7,36 @@
 // 说明：    PDB Explorer ComboBox实现
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <stdPDL.h>
+#include <pdl_base.h>
 #include "CmbEx.h"
+
+PDL_DEFINE_WINCLASS(CLbEx)
 
 CLbEx& CLbEx::operator=(__in HWND hWnd)
 {
-    SubclassWindow(hWnd, this);
+    LListBox::Attach(hWnd);
+    LSubclassWnd::SubclassWindow(hWnd);
     return *this;
 }
 
 void CLbEx::OnLButtonDblClk(UINT uFlags, int x, int y, BOOL& bHandled)
 {
-    ::SendMessage(GetParent(), WM_COMMAND, IDOK,
-        reinterpret_cast<LPARAM>(m_hWnd));
+    ::SendMessage(GetParent(), WM_COMMAND, IDOK, (LPARAM)m_hWnd);
 }
 
-BOOL CCmbEx::Create(__in LPCTSTR lpWindowName, __in DWORD dwStyle,
-                    __in LPCRECT lpRect, __in HWND hWndParent, __in UINT nID,
-                    __in LPVOID lpParam)
+PDL_DEFINE_WINCLASS(CCmbEx)
+
+BOOL CCmbEx::Create(
+    __in PCTSTR lpWindowName,
+    __in DWORD dwStyle,
+    __in LPCRECT lpRect,
+    __in HWND hWndParent,
+    __in UINT nID,
+    __in PVOID lpParam)
 {
     BOOL bRet = LComboBox::Create(lpWindowName, dwStyle, lpRect, hWndParent,
         nID, lpParam);
-    SubclassWindow(Detach(), this);
+    LSubclassWnd::SubclassWindow(m_hWnd);
 
     m_list = GetListBox();
     m_edit = GetEdit();
@@ -45,18 +53,16 @@ int CCmbEx::FindString(__in LPCTSTR lpszString)
 void CCmbEx::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags, BOOL& bHandled)
 {
     if (VK_RETURN == nChar)
-    {
-        ::SendMessage(GetParent(), WM_COMMAND, IDOK,
-            reinterpret_cast<LPARAM>(m_hWnd));
-    }
+        ::SendMessage(GetParent(), WM_COMMAND, IDOK, (LPARAM)m_hWnd);
     else
-    {
         bHandled = FALSE;
-    }
 }
 
-void CCmbEx::ProcessCommandMessage(WORD wNotifyCode, WORD wID, HWND hWndCtrl,
-                                   BOOL& bHandled)
+void CCmbEx::OnCommand(
+    WORD wNotifyCode,
+    WORD wID,
+    HWND hWndCtrl,
+    BOOL& bHandled)
 {
     if (EN_UPDATE == wNotifyCode)
     {
@@ -76,8 +82,7 @@ void CCmbEx::ProcessCommandMessage(WORD wNotifyCode, WORD wID, HWND hWndCtrl,
     }
     else if (IDOK == wID)
     {
-        ::SendMessage(GetParent(), WM_COMMAND, IDOK,
-            reinterpret_cast<LPARAM>(m_hWnd));
+        ::SendMessage(GetParent(), WM_COMMAND, IDOK, (LPARAM)m_hWnd);
     }
     else
     {

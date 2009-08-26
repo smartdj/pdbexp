@@ -7,8 +7,7 @@
 // ËµÃ÷£º    PE ·ÖÎöÆ÷
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef PDBEXP_PEANALYZER
-#define PDBEXP_PEANALYZER
+#pragma once
 
 typedef enum _tagSignType {
     ErrorSign = -1,
@@ -33,5 +32,3 @@ private:
     HANDLE m_hMapping;
     PVOID m_pvBase;
 };
-
-#endif // PDBEXP_PEANALYZER

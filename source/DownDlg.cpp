@@ -7,9 +7,9 @@
 // 说明：    下载对话框实现
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <stdPDL.h>
+#include <pdl_base.h>
 #include "DownDlg.h"
-#include <PDLComDlg.h>
+#include <pdl_comdlg.h>
 #include <ShlObj.h>
 
 #include "resource.h"
@@ -37,7 +37,8 @@ CDownDlg::~CDownDlg(void)
 
 void CDownDlg::AddInfo(__in PCTSTR lpInfo)
 {
-    m_edtInfo.SetSel(-1, -1);
+    int len = m_edtInfo.GetWindowTextLength();
+    m_edtInfo.SetSel(len, -1);
     m_edtInfo.ReplaceSel(lpInfo);
 }
 
@@ -48,7 +49,11 @@ void CDownDlg::ClearInfo(void)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void CDownDlg::ProcessCommandMessage(WORD wNotifyCode, WORD wID, HWND hWndCtrl, BOOL& bHandled)
+void CDownDlg::OnCommand(
+    WORD wNotifyCode,
+    WORD wID,
+    HWND hWndCtrl,
+    BOOL& bHandled)
 {
     if (EN_UPDATE == wNotifyCode)
     {
@@ -125,7 +130,7 @@ void CDownDlg::OnBtnDownLoad(void)
     AddInfo(_T("开始下载..."));
     DWORD dwLen = lstrlen(m_pSign) + lstrlen(m_pFile) * 2 + 20;
 
-    LPTSTR lpURL = new TCHAR[dwLen];
+    PTSTR lpURL = new TCHAR[dwLen];
     wsprintf(lpURL, _T("download/symbols/%s/%s/%s"), m_pFile, m_pSign, m_pFile);
     lpURL[dwLen - 2] = _T('_');
 
@@ -140,6 +145,7 @@ void CDownDlg::OnBtnDownLoad(void)
     lstrcat(dlg.m_szFileName, m_pFile);
     if (!dlg.DoModal(m_hWnd))
     {
+        AddInfo(_T("下载已取消。"));
         delete [] lpURL;
         return;
     }

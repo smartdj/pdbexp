@@ -7,17 +7,18 @@
 // 说明：    主框架窗口实现
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <stdPDL.h>
-#include <PDLAppModule.h>
+#include <pdl_base.h>
+#include <pdl_module.h>
 #include "MainFrame.h"
-#include <PDLCom.h>
-#include <PDLComDlg.h>
-#include <PDLMenu.h>
-#include <PDLFile.h>
+#include <pdl_com.h>
+#include <pdl_comdlg.h>
+#include <pdl_menu.h>
+#include <pdl_file.h>
 #include "ModifyDlg.h"
 #include "SettingDlg.h"
 #include "AboutDlg.h"
 #include "DownDlg.h"
+#include "SymWrap.h"
 
 #include "resource.h"
 
@@ -35,26 +36,14 @@ const TBBUTTON g_btns[TB_BTN_COUNT] = {
     { 7, ID_ABOUT,    TBSTATE_ENABLED, BTNS_AUTOSIZE, { 0, 0 }, 0, 7 }
 };
 
-CMainFrame::CMainFrame(void) : m_DnLdr(_T("Microsoft-Symbol-Server/6.9.0003.113"))
+CMainFrame::CMainFrame(__in LPWNDCLASS wc) : LWindow(wc)
+    , m_DnLdr(_T("Microsoft-Symbol-Server/6.9.0003.113"))
 {
-    LAppModule *theApp = LAppModule::GetApp();
-
-    WNDCLASS wc      = { 0 };
-    wc.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_BTNFACE + 1);
-    wc.hCursor       = ::LoadCursor(NULL, IDC_ARROW);
-    wc.hIcon         = theApp->LoadIcon(MAKEINTRESOURCE(IDI_MAIN_ICON));
-    wc.hInstance     = theApp->GetInstance();
-    wc.lpfnWndProc   = LWindow::StartWndProc;
-    wc.lpszClassName = _T("PDBExp");
-    wc.lpszMenuName  = MAKEINTRESOURCE(IDR_MAIN_MENU);
-
-    ::RegisterClass(&wc);
-
     LOGFONT lf  = { 0 };
     lstrcpy(lf.lfFaceName, _T("Courier New"));
     lf.lfHeight = -12;
     lf.lfWeight = FW_NORMAL;
-    m_hFont     = ::CreateFontIndirect(&lf);
+    m_hFont = ::CreateFontIndirect(&lf);
 
     m_ini.Open(_T("PDBExp.ini"));
     m_nMaxHistory = m_ini.GetInt("Setting", "MaxHistory", 20);
@@ -62,7 +51,8 @@ CMainFrame::CMainFrame(void) : m_DnLdr(_T("Microsoft-Symbol-Server/6.9.0003.113"
         m_nMaxHistory = 10;
     if (30 < m_nMaxHistory)
         m_nMaxHistory = 30;
-    m_itCurrent   = NULL;
+    m_itCurrent = NULL;
+    m_lstHistory.Create(sizeof(EXPINFO), NULL, DestroyExpItem);
 }
 
 CMainFrame::~CMainFrame(void)
@@ -71,21 +61,19 @@ CMainFrame::~CMainFrame(void)
         ::DeleteObject(m_hFont);
 }
 
-void CMainFrame::AddExpItem(__in IDiaSymbol* pSymbol,
-                            __in DWORD_PTR dwTypeInfo)
+void CMainFrame::AddExpItem(__in IDiaSymbol* pSymbol)
 {
     EXPINFO info;
-    info.pSymbol    = pSymbol;
-    info.dwTypeInfo = dwTypeInfo;
+    info.pSymbol = pSymbol;
     if (m_itCurrent == m_lstHistory.GetTailIterator())
     {
         // 如果是浏览末尾，则加入末尾项
-        m_lstHistory.AddTail(info);
-        if (m_nMaxHistory < m_lstHistory.GetSize())
+        m_lstHistory.AddTail(&info);
+        if ((DWORD)m_nMaxHistory < m_lstHistory.GetCount())
         {
             // 如果超过了最大限制，则删除最早项
             LIterator itDel = m_lstHistory.GetHeadIterator();
-            DelExpItem(itDel);
+            m_lstHistory.Remove(itDel);
         }
     }
     else
@@ -96,62 +84,76 @@ void CMainFrame::AddExpItem(__in IDiaSymbol* pSymbol,
             LIterator itDel = m_lstHistory.GetTailIterator();
             while (itDel != m_itCurrent)
             {
-                DelExpItem(itDel);
+                m_lstHistory.Remove(itDel);
                 itDel = m_lstHistory.GetTailIterator();
             }
         }
-        m_lstHistory.AddTail(info);
+        m_lstHistory.AddTail(&info);
     }
     m_itCurrent = m_lstHistory.GetTailIterator();
     CheckCommandState();
 
     LMenu menu = GetMenu();
     m_tb.EnableButton(ID_SAVE, TRUE);
-    m_tb.EnableButton(ID_MODIFY, TRUE);
-    menu.EnableMenuItem(ID_SAVE, MF_BYCOMMAND | MF_ENABLED);
-    menu.EnableMenuItem(ID_MODIFY, MF_BYCOMMAND | MF_ENABLED);
+    menu.EnableItem(ID_SAVE, MF_BYCOMMAND | MF_ENABLED);
 }
 
 BOOL CMainFrame::cbAddEnum(IDiaSymbol* pCurSymbol, LPVOID pParam)
 {
-    CMainFrame *pThis = (CMainFrame*)pParam;
+    CMainFrame* This = (CMainFrame*)pParam;
 
-    BSTR b = NULL;
+    LBStr b;
     pCurSymbol->get_name(&b);
-
-    LString strName = b;
-    if (0 != lstrcmp(strName, _T("__unnamed"))
-        && CB_ERR == pThis->m_cbSymbols.FindString(strName))
+    if (0 != lstrcmpW(b, L"__unnamed")
+        && CB_ERR == This->m_cbSymbols.FindString(b))
     {
-        int idx = pThis->m_cbSymbols.AddString(strName);
-        pThis->m_cbSymbols.SetItemData(idx,
-            MAKELPARAM(0, SymTagEnum));
+        int idx = This->m_cbSymbols.AddString(b);
+
+        DWORD id;
+        pCurSymbol->get_symIndexId(&id);
+        This->m_cbSymbols.SetItemData(idx, id);
     }
-    ::SysFreeString(b);
+
+    return FALSE;
+}
+
+BOOL CMainFrame::cbAddTypedef(IDiaSymbol* pCurSymbol, LPVOID pParam)
+{
+    CMainFrame* This = (CMainFrame*)pParam;
+
+    LBStr b;
+    pCurSymbol->get_name(&b);
+    if (0 != lstrcmpW(b, L"__unnamed")
+        && CB_ERR == This->m_cbSymbols.FindString(b))
+    {
+        int idx = This->m_cbSymbols.AddString(b);
+
+        DWORD id;
+        pCurSymbol->get_symIndexId(&id);
+        This->m_cbSymbols.SetItemData(idx, id);
+    }
 
     return FALSE;
 }
 
 BOOL CMainFrame::cbAddUDT(IDiaSymbol* pCurSymbol, LPVOID pParam)
 {
-    CMainFrame *pThis = (CMainFrame*)pParam;
+    CMainFrame* This = (CMainFrame*)pParam;
 
     UdtKind enKind;
-    pCurSymbol->get_udtKind(reinterpret_cast<LPDWORD>(&enKind));
+    pCurSymbol->get_udtKind((LPDWORD)&enKind);
 
-    BSTR b = NULL;
+    LBStr b;
     pCurSymbol->get_name(&b);
-
-    LString strName = b;
-    if (UdtClass != enKind // TODO: Class!!
-        && 0 != lstrcmp(strName, _T("__unnamed"))
-        && CB_ERR == pThis->m_cbSymbols.FindString(strName))
+    if (0 != lstrcmpW(b, L"__unnamed") &&
+        CB_ERR == This->m_cbSymbols.FindString(b))
     {
-        int idx = pThis->m_cbSymbols.AddString(strName);
-        pThis->m_cbSymbols.SetItemData(idx,
-            MAKELPARAM(enKind, SymTagUDT));
+        int idx = This->m_cbSymbols.AddString(b);
+
+        DWORD id;
+        pCurSymbol->get_symIndexId(&id);
+        This->m_cbSymbols.SetItemData(idx, id);
     }
-    ::SysFreeString(b);
 
     return FALSE;
 }
@@ -168,65 +170,79 @@ void CMainFrame::CheckCommandState(void)
     if (NULL == m_itCurrent || m_lstHistory.GetHeadIterator() == m_itCurrent)
     {
         m_tb.EnableButton(ID_BACK, FALSE);
-        menu.EnableMenuItem(ID_BACK, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
+        menu.EnableItem(ID_BACK, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
     }
     else
     {
         m_tb.EnableButton(ID_BACK, TRUE);
-        menu.EnableMenuItem(ID_BACK, MF_BYCOMMAND | MF_ENABLED);
+        menu.EnableItem(ID_BACK, MF_BYCOMMAND | MF_ENABLED);
     }
 
     if (NULL == m_itCurrent || m_lstHistory.GetTailIterator() == m_itCurrent)
     {
         m_tb.EnableButton(ID_NEXT, FALSE);
-        menu.EnableMenuItem(ID_NEXT, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
+        menu.EnableItem(ID_NEXT, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
     }
     else
     {
         m_tb.EnableButton(ID_NEXT, TRUE);
-        menu.EnableMenuItem(ID_NEXT, MF_BYCOMMAND | MF_ENABLED);
+        menu.EnableItem(ID_NEXT, MF_BYCOMMAND | MF_ENABLED);
     }
 
-    if (NULL == m_vDetail.GetCurrentSymbol())
+    IDiaSymbol* curSym = m_vDetail.GetCurrentSymbol();
+    if (NULL == curSym)
     {
         m_tb.EnableButton(ID_SAVE, FALSE);
         m_tb.EnableButton(ID_MODIFY, FALSE);
-        menu.EnableMenuItem(ID_SAVE, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
-        menu.EnableMenuItem(ID_MODIFY, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
+        menu.EnableItem(ID_SAVE, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
+        menu.EnableItem(ID_MODIFY, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
     }
     else
     {
         m_tb.EnableButton(ID_SAVE, TRUE);
-        m_tb.EnableButton(ID_MODIFY, TRUE);
-        menu.EnableMenuItem(ID_SAVE, MF_BYCOMMAND | MF_ENABLED);
-        menu.EnableMenuItem(ID_MODIFY, MF_BYCOMMAND | MF_ENABLED);
+        menu.EnableItem(ID_SAVE, MF_BYCOMMAND | MF_ENABLED);
     }
 }
 
-void CMainFrame::ClearExpItem(void)
+void CMainFrame::DestroyExpItem(PVOID ptr)
 {
-    LIterator it = m_lstHistory.GetHeadIterator();
-    while (NULL != it)
+    PEXPINFO info = (PEXPINFO)ptr;
+    info->pSymbol->Release();
+}
+
+void CMainFrame::DumpSymbol(__in IDiaSymbol* pSymbol)
+{
+    LStringW str;
+    m_vDetail.Clear();
+    CSym* sym = CSym::NewSym(pSymbol);
+    sym->Format(&str);
+    CSym::Delete(sym);
+    m_vDetail.AddText(str);
+
+    // “整理”按钮的状态
+    enum SymTagEnum tag;
+    pSymbol->get_symTag((PDWORD)&tag);
+    LMenu menu = GetMenu();
+    switch (tag)
     {
-        const EXPINFO& info = m_lstHistory.GetDataRef(it);
-        info.pSymbol->Release();
-        m_lstHistory.GetNextIterator(&it);
+    case SymTagUDT:
+    case SymTagEnum:
+        menu.EnableItem(ID_MODIFY, MF_BYCOMMAND | MF_ENABLED);
+        m_tb.EnableButton(ID_MODIFY, TRUE);
+        break;
+    default:
+        menu.EnableItem(ID_MODIFY, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
+        m_tb.EnableButton(ID_MODIFY, FALSE);
     }
-    m_lstHistory.Clear();
-    m_itCurrent = NULL;
-}
 
-void CMainFrame::DelExpItem(__in LIterator it)
-{
-    const EXPINFO& info = m_lstHistory.GetDataRef(it);
-    info.pSymbol->Release();
-    m_lstHistory.Remove(it);
+    m_vDetail.SetCurrentSymbol(pSymbol);
 }
 
 void CMainFrame::Open(__in LPCWSTR pszPdbFile)
 {
-    ClearExpItem();
+    m_lstHistory.Clear();
     m_vDetail.Clear();
+    m_itCurrent = NULL;
     if (m_dia.OpenPDB(pszPdbFile))
     {
         m_status.SetText(0, _T("正在扫描..."));
@@ -248,6 +264,7 @@ void CMainFrame::Refresh(void)
     m_cbSymbols.ResetContent();
     m_dia.EnumTag(NULL, SymTagUDT, cbAddUDT, this, NULL);
     m_dia.EnumTag(NULL, SymTagEnum, cbAddEnum, this, NULL);
+    m_dia.EnumTag(NULL, SymTagTypedef, cbAddTypedef, this, NULL);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -359,8 +376,11 @@ void CMainFrame::OnSize(UINT nType, int cx, int cy, BOOL& bHandled)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void CMainFrame::ProcessCommandMessage(WORD wNotifyCode, WORD wID,
-                                       HWND hWndCtrl, BOOL& bHandled)
+void CMainFrame::OnCommand(
+    WORD wNotifyCode,
+    WORD wID,
+    HWND hWndCtrl,
+    BOOL& bHandled)
 {
     switch (wID)
     {
@@ -391,11 +411,10 @@ void CMainFrame::OnBack(void)
 {
     if (m_itCurrent != m_lstHistory.GetHeadIterator())
     {
-        m_vDetail.Clear();
         m_lstHistory.GetPrevIterator(&m_itCurrent);
-        const EXPINFO& info = m_lstHistory.GetDataRef(m_itCurrent);
-        m_dia.DumpSymbol(info.pSymbol, info.dwTypeInfo, cbDumpString, this);
-        m_vDetail.SetCurrentSymbol(info.pSymbol);
+        PEXPINFO info = (PEXPINFO)m_lstHistory.GetAt(m_itCurrent);
+
+        DumpSymbol(info->pSymbol);
     }
     CheckCommandState();
 }
@@ -428,39 +447,31 @@ void CMainFrame::OnModify(void)
     LStringW strTemplate;
     m_ini.GetString("Setting", "Template", L"", &strTemplate);
 
-    const EXPINFO& info = m_lstHistory.GetDataRef(m_itCurrent);
-    CModifyDlg dlg(&m_dia, info.pSymbol, info.dwTypeInfo);
-    dlg.DoModal(m_hWnd, reinterpret_cast<LPARAM>(strTemplate.Detach()));
+    PEXPINFO info = (PEXPINFO)m_lstHistory.GetAt(m_itCurrent);
+    CModifyDlg dlg(&m_dia, info->pSymbol);
+    dlg.DoModal(m_hWnd, (LPARAM)strTemplate.Detach());
 }
 
 void CMainFrame::OnNext(void)
 {
     if (m_itCurrent != m_lstHistory.GetTailIterator())
     {
-        m_vDetail.Clear();
         m_lstHistory.GetNextIterator(&m_itCurrent);
-        const EXPINFO& info = m_lstHistory.GetDataRef(m_itCurrent);
-        m_dia.DumpSymbol(info.pSymbol, info.dwTypeInfo, cbDumpString, this);
-        m_vDetail.SetCurrentSymbol(info.pSymbol);
+        PEXPINFO info = (PEXPINFO)m_lstHistory.GetAt(m_itCurrent);
+        DumpSymbol(info->pSymbol);
     }
     CheckCommandState();
 }
 
 void CMainFrame::OnOk(void)
 {
-    m_vDetail.Clear();
     int idx = m_cbSymbols.GetCurSel();
     if (CB_ERR != idx)
     {
-        LStringW str;
-        m_cbSymbols.GetLBText(idx, &str);
-        DWORD_PTR dwTypeInfo = m_cbSymbols.GetItemData(idx);
-
-        IDiaSymbol *pCurSymbol = m_dia.FindSymbol(NULL,
-            static_cast<enum SymTagEnum>(HIWORD(dwTypeInfo)), str);
-        m_dia.DumpSymbol(pCurSymbol, dwTypeInfo, cbDumpString, this);
-        m_vDetail.SetCurrentSymbol(pCurSymbol);
-        AddExpItem(pCurSymbol, dwTypeInfo);
+        DWORD id = m_cbSymbols.GetItemData(idx);
+        IDiaSymbol* pCurSymbol = m_dia.FindSymbol(NULL, id);
+        DumpSymbol(pCurSymbol);
+        AddExpItem(pCurSymbol);
     }
 }
 
@@ -479,10 +490,9 @@ void CMainFrame::OnSave(void)
 
     LFileDialogW dlg(FALSE, L"*.txt\0*.txt\0\0", NULL);
     IDiaSymbol* pSymbol = m_vDetail.GetCurrentSymbol();
-    BSTR        bsName  = NULL;
+    LBStr bsName;
     pSymbol->get_name(&bsName);
-    wsprintfW(dlg.m_szFileName, L"%s.txt", bsName);
-    ::SysFreeString(bsName);
+    wsprintfW(dlg.m_szFileName, L"%s.txt", (PCWSTR)bsName);
 
     if (dlg.DoModal(m_hWnd))
     {
@@ -507,27 +517,21 @@ void CMainFrame::OnDownLoad(void)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-IDiaSymbol* CMainFrame::OnSymbolChange(LPCWSTR pszName)
+void CMainFrame::OnSymbolChange(DWORD id)
 {
-    LComPtr<IDiaSymbol> pCurSymbol;
-    pCurSymbol.Attach(m_vDetail.DetachCurrentSymbol());
-    m_vDetail.Clear();
+    IDiaSymbol* sym = m_vDetail.DetachCurrentSymbol();
+    if (NULL != sym)
+        sym->Release();
 
-    LComPtr<IDiaSymbol> pData = m_dia.FindSymbol(pCurSymbol, SymTagData,
-        pszName);
-    IDiaSymbol* pRet = CDiaHelper::GetSymbolBaseType(pData);
-    enum SymTagEnum enTag = SymTagNull;
-    pRet->get_symTag(reinterpret_cast<LPDWORD>(&enTag));
-    DWORD_PTR dwTypeInfo = MAKELPARAM(0, enTag);
-    if (SymTagUDT == enTag)
+    IDiaSymbol* pData = m_dia.FindSymbol(NULL, id);
+    if (NULL == pData)
     {
-        UdtKind enKind;
-        pRet->get_udtKind(reinterpret_cast<LPDWORD>(&enKind));
-        dwTypeInfo = MAKELPARAM(enKind, enTag);
+        PDLLOG(_T("FindSymbol failed, id = %d.\r\n"), id);
+        return;
     }
-    m_dia.DumpSymbol(pRet, dwTypeInfo, cbDumpString, this);
-    AddExpItem(pRet, dwTypeInfo);
-    return pRet;
+
+    DumpSymbol(pData);
+    AddExpItem(pData);
 }
 
 void CMainFrame::OnNewFileDrop(LPCWSTR lpFileName)

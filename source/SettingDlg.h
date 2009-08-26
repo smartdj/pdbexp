@@ -7,19 +7,18 @@
 // 说明：    设置对话框
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef PDBEXP_SETTINGDLG
-#define PDBEXP_SETTINGDLG
+#pragma once
 
-#include <PDLWindow.h>
-#include <PDLParser.h>
-#include <PDLComCtl.h>
+#include <pdl_window.h>
+#include <pdl_parser.h>
+#include <pdl_commctrl.h>
 
 class CSettingDlg : public LDialog
 {
 public:
     CSettingDlg(__in LIniParser* pIni);
 private:
-    void ProcessCommandMessage(WORD wNotifyCode, WORD wID, HWND hWndCtrl,
+    void OnCommand(WORD wNotifyCode, WORD wID, HWND hWndCtrl,
         BOOL& bHandled);
     void OnOk(void);
     void OnOpen(void);
@@ -30,5 +29,3 @@ private:
     LIniParser* m_pIni;
     LUpDown     m_spin;
 };
-
-#endif // PDBEXP_SETTINGDLG

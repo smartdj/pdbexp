@@ -7,10 +7,10 @@
 // 说明：    程序入口
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <stdPDL.h>
-#include <PDLAppModule.h>
-#include <PDLComCtl.h>
-#include <PDLCom.h>
+#include <pdl_base.h>
+#include <pdl_module.h>
+#include <pdl_commctrl.h>
+#include <pdl_com.h>
 #include "MainFrame.h"
 #include "Version.h"
 
@@ -23,13 +23,21 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     LComInit    com;
     LOleInit    ole;
 
-    LAppModule::Initialize(hInstance);
+    LAppModule* theApp = LAppModule::Initialize(hInstance);
 
-    CMainFrame frameWnd;
-    if (!frameWnd.Create(_T("PDBExp"), PDBEXP_WNDCAPTION,
+    WNDCLASS wc = { 0 };
+    wc.hbrBackground = PDL_SYSBRUSH(COLOR_BTNFACE);
+    wc.hCursor = ::LoadCursor(NULL, IDC_ARROW);
+    wc.hIcon = theApp->LoadIcon(MAKEINTRESOURCE(IDI_MAIN_ICON));
+    wc.hInstance = theApp->GetInstance();
+    wc.lpszClassName = _T("PDBExp");
+    wc.lpszMenuName = MAKEINTRESOURCE(IDR_MAIN_MENU);
+
+    CMainFrame frameWnd(&wc);
+    if (!frameWnd.Create(NULL, PDBEXP_WNDCAPTION,
         WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN,
-        CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, NULL, NULL,
-        NULL))
+        CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
+        NULL, NULL, NULL))
     {
         return -1;
     }
@@ -51,5 +59,5 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     }
 
     LAppModule::Destroy();
-    return static_cast<int>(msg.wParam);
+    return (int)msg.wParam;
 }

@@ -7,8 +7,7 @@
 // 说明：    文件下载类
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef PDBEXP_DOWNLOADER
-#define PDBEXP_DOWNLOADER
+#pragma once
 
 #include <WinInet.h>
 
@@ -46,5 +45,3 @@ private:
     PCTSTR m_proxyUserName;
     PCTSTR m_proxyPassWord;
 };
-
-#endif // PDBEXP_DOWNLOADER

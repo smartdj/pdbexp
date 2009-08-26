@@ -7,13 +7,10 @@
 // 说明：    符号详细信息类
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef PDBEXP_DETAILVIEW
-#define PDBEXP_DETAILVIEW
-
 #pragma once
 
-#include <PDLWindow.h>
-#include <PDLCom.h>
+#include <pdl_window.h>
+#include <pdl_com.h>
 #include <ExDisp.h>
 #include <MsHTML.h>
 #include <MsHtmHst.h>
@@ -23,7 +20,7 @@
 class CEventHandler
 {
 public:
-    virtual IDiaSymbol* OnSymbolChange(LPCWSTR pszName);
+    virtual void OnSymbolChange(DWORD id);
     virtual void OnNavigateComplete(void);
     virtual void OnNewFileDrop(LPCWSTR lpFileName);
 };
@@ -32,10 +29,8 @@ class CDetailView : public LAxCtrl, public IDocHostUIHandler
 {
 public:
     CDetailView(void);
-    BOOL Create(__in LPCRECT lpRect, __in HWND hWndParent, __in UINT nID,
-        __in LPCWSTR pszTemplate);
 public:
-    void AddText(__in LPCWSTR pszText);
+    void AddText(__in PCWSTR pszText);
     void Clear(void);
     void Copy(void);
     void CopyAll(void);
@@ -48,7 +43,6 @@ public:
 private:
     int OnCreate(LPCREATESTRUCT lpCreateStruct, BOOL& bHandled);
     void OnDestroy(BOOL& bHandled);
-    void OnSize(UINT nType, int cx, int cy, BOOL& bHandled);
 private:
     // IUnknown
     HRESULT STDMETHODCALLTYPE QueryInterface(__in REFIID iid,
@@ -94,12 +88,10 @@ private:
     HRESULT STDMETHODCALLTYPE FilterDataObject(__in IDataObject *pDO,
         __out IDataObject **ppDORet);
 private:
-    LComPtr<IWebBrowser2>   m_pWB2;
-    LComPtr<IHTMLDocument2> m_pDoc;
-    LComPtr<IHTMLElement>   m_pBody;
-    IDiaSymbol             *m_pCurSymbol;
-    CEventHandler          *m_pEventHandler;
-    BOOL                    m_bEnable;
+    LComPtr<IWebBrowser2> m_pWB2;
+    LComQIPtr<IHTMLDocument2> m_pDoc;
+    LComPtr<IHTMLElement> m_pBody;
+    IDiaSymbol *m_pCurSymbol;
+    CEventHandler *m_pEventHandler;
+    BOOL m_bEnable;
 };
-
-#endif PDBEXP_DETAILVIEW

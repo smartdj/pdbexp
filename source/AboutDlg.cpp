@@ -7,7 +7,7 @@
 // 说明：    关于对话框实现
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <stdPDL.h>
+#include <pdl_base.h>
 #include "AboutDlg.h"
 #include "Version.h"
 #include <ShellAPI.h>
@@ -20,8 +20,11 @@ CAboutDlg::CAboutDlg(void) : LDialog(IDD_DLG_ABOUT)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void CAboutDlg::ProcessCommandMessage(WORD wNotifyCode, WORD wID,
-                                      HWND hWndCtrl, BOOL& bHandled)
+void CAboutDlg::OnCommand(
+    WORD wNotifyCode,
+    WORD wID,
+    HWND hWndCtrl,
+    BOOL& bHandled)
 {
     switch (wID)
     {
@@ -59,8 +62,8 @@ BOOL CAboutDlg::OnInitDialog(HWND hCtrlFocus, LPARAM lParam, BOOL& bHandled)
     wndVer.SetWindowText(PDBEXP_WNDCAPTION);
     wndVer.SizeToContent();
 
-    m_stHome.SubclassWindow(GetDlgItem(IDC_ST_HOMEPAGE));
-    m_stMail.SubclassWindow(GetDlgItem(IDC_ST_MAIL));
+    m_stHome.Attach(GetDlgItem(IDC_ST_HOMEPAGE));
+    m_stMail.Attach(GetDlgItem(IDC_ST_MAIL));
     return FALSE;
 }
 
