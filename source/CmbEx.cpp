@@ -38,18 +38,8 @@ BOOL CCmbEx::Create(__in LPCTSTR lpWindowName, __in DWORD dwStyle,
 
 int CCmbEx::FindString(__in LPCTSTR lpszString)
 {
-    // FindString必须自己实现，因为系统默认的函数竟会自动创建找不到的项目
-    LString str;
-    int cnt = GetCount();
-    for (int i = 0; i < cnt; ++i)
-    {
-        GetLBText(i, &str);
-        if (0 == _tcsnicmp(str, lpszString, lstrlen(lpszString)))
-        {
-            return i;
-        }
-    }
-    return CB_ERR;
+    // FindString调用ListBox的实现，因为系统默认的函数竟会自动创建找不到的项目
+    return m_list.FindString(0, lpszString);
 }
 
 void CCmbEx::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags, BOOL& bHandled)

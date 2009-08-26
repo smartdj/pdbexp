@@ -1,6 +1,6 @@
 PDB Explorer自述文档
 
-版本：v1.00.023(Unicode)
+版本：v1.01.025(Unicode)
 适用平台：Win2K/WinXP
 版权所有：Titi工作室
 作者：李马
