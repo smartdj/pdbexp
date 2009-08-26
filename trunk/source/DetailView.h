@@ -25,6 +25,7 @@ class CEventHandler
 public:
     virtual IDiaSymbol* OnSymbolChange(LPCWSTR pszName);
     virtual void OnNavigateComplete(void);
+    virtual void OnNewFileDrop(LPCWSTR lpFileName);
 };
 
 class CDetailView : public LAxCtrl, public IDocHostUIHandler

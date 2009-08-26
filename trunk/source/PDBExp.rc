@@ -66,7 +66,7 @@ BEGIN
     POPUP "文件(&F)"
     BEGIN
         MENUITEM "打开(&O)...\tCtrl+O",           ID_OPEN
-        MENUITEM "保存(&S)...\tCtrl+S",           ID_EXIT
+        MENUITEM "保存(&S)...\tCtrl+S",           ID_SAVE
         MENUITEM SEPARATOR
         MENUITEM "退出(&X)\tAlt+X",               ID_EXIT
     END
@@ -82,6 +82,7 @@ BEGIN
     BEGIN
         MENUITEM "设置(&S)...",                   ID_SETTING
         MENUITEM "整理当前符号(&M)...",               ID_MODIFY
+        MENUITEM "下载 PDB (&D)...",              ID_DOWNLOAD
         MENUITEM SEPARATOR
         MENUITEM "关于(&A)...",                   ID_ABOUT
     END
@@ -170,6 +171,22 @@ BEGIN
     LTEXT           "http://www.titilima.cn",IDC_ST_HOMEPAGE,38,79,89,8
 END
 
+IDD_DLG_DOWNLOAD DIALOGEX 0, 0, 250, 176
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "下载 PDB 文件"
+FONT 9, "宋体", 400, 0, 0x86
+BEGIN
+    DEFPUSHBUTTON   "关闭",IDOK,193,46,50,16
+    LTEXT           "本地文件",IDC_STATIC,7,9,33,8
+    EDITTEXT        IDC_EDIT_FILE,59,7,159,14,ES_AUTOHSCROLL | ES_READONLY
+    PUSHBUTTON      "...",IDC_BTN_BROWSE1,221,7,22,14
+    LTEXT           "PDB 保存位置",IDC_STATIC,7,30,49,8
+    EDITTEXT        IDC_EDIT_PDB,59,28,159,14,ES_AUTOHSCROLL | ES_READONLY
+    PUSHBUTTON      "...",IDC_BTN_BROWSE2,221,28,22,14
+    PUSHBUTTON      "开始下载",IDC_BTN_DOWNLOAD,141,46,50,16
+    EDITTEXT        IDC_EDIT_INFO,7,66,236,103,ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY | WS_VSCROLL
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -202,6 +219,14 @@ BEGIN
         VERTGUIDE, 38
         TOPMARGIN, 7
         BOTTOMMARGIN, 113
+    END
+
+    IDD_DLG_DOWNLOAD, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 243
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 169
     END
 END
 #endif    // APSTUDIO_INVOKED

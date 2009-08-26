@@ -17,6 +17,7 @@
 #include <PDLContainer.h>
 #include "DetailView.h"
 #include "DiaHelper.h"
+#include "DownLoader.h"
 
 typedef struct _tagExpInfo {
     IDiaSymbol* pSymbol;
@@ -36,6 +37,7 @@ private:
     void CheckCommandState(void);
     void ClearExpItem(void);
     void DelExpItem(__in LIterator it);
+    void Open(__in LPCWSTR pszPdbFile);
     void Refresh(void);
 private:
     int OnCreate(LPCREATESTRUCT lpCreateStruct, BOOL& bHandled);
@@ -56,8 +58,10 @@ private:
     void OnOpen(void);
     void OnSave(void);
     void OnSetting(void);
+    void OnDownLoad(void);
 private:
     IDiaSymbol* OnSymbolChange(LPCWSTR pszName);
+    void OnNewFileDrop(LPCWSTR lpFileName);
 private:
     HFONT                m_hFont;
     LToolBar             m_tb;
@@ -71,6 +75,7 @@ private:
     LDoubleList<EXPINFO> m_lstHistory;
     LIterator            m_itCurrent;
     int                  m_nMaxHistory;
+    CDownLoader          m_DnLdr;
 };
 
 #endif // PDBEXP_MAINFRAME

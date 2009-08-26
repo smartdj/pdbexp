@@ -17,23 +17,25 @@
 #include "ModifyDlg.h"
 #include "SettingDlg.h"
 #include "AboutDlg.h"
+#include "DownDlg.h"
 
 #include "resource.h"
 
-#define TB_BTN_COUNT    8
+#define TB_BTN_COUNT    9
 
 const TBBUTTON g_btns[TB_BTN_COUNT] = {
-    { 0, ID_OPEN,    TBSTATE_ENABLED, BTNS_AUTOSIZE, { 0, 0 }, 0, 0 },
-    { 1, ID_SAVE,    TBSTATE_ENABLED, BTNS_AUTOSIZE, { 0, 0 }, 0, 1 },
-    { 2, ID_BACK,    TBSTATE_ENABLED, BTNS_AUTOSIZE, { 0, 0 }, 0, 2 },
-    { 3, ID_NEXT,    TBSTATE_ENABLED, BTNS_AUTOSIZE, { 0, 0 }, 0, 3 },
-    { 4, ID_COPYALL, TBSTATE_ENABLED, BTNS_AUTOSIZE, { 0, 0 }, 0, 4 },
-    { 5, ID_MODIFY,  TBSTATE_ENABLED, BTNS_AUTOSIZE, { 0, 0 }, 0, 5 },
-    { 6, ID_SETTING, TBSTATE_ENABLED, BTNS_AUTOSIZE, { 0, 0 }, 0, 6 },
-    { 7, ID_ABOUT,   TBSTATE_ENABLED, BTNS_AUTOSIZE, { 0, 0 }, 0, 7 }
+    { 0, ID_OPEN,     TBSTATE_ENABLED, BTNS_AUTOSIZE, { 0, 0 }, 0, 0 },
+    { 1, ID_SAVE,     TBSTATE_ENABLED, BTNS_AUTOSIZE, { 0, 0 }, 0, 1 },
+    { 2, ID_BACK,     TBSTATE_ENABLED, BTNS_AUTOSIZE, { 0, 0 }, 0, 2 },
+    { 3, ID_NEXT,     TBSTATE_ENABLED, BTNS_AUTOSIZE, { 0, 0 }, 0, 3 },
+    { 4, ID_COPYALL,  TBSTATE_ENABLED, BTNS_AUTOSIZE, { 0, 0 }, 0, 4 },
+    { 5, ID_MODIFY,   TBSTATE_ENABLED, BTNS_AUTOSIZE, { 0, 0 }, 0, 5 },
+    { 6, ID_SETTING,  TBSTATE_ENABLED, BTNS_AUTOSIZE, { 0, 0 }, 0, 6 },
+    { 8, ID_DOWNLOAD, TBSTATE_ENABLED, BTNS_AUTOSIZE, { 0, 0 }, 0, 8 },
+    { 7, ID_ABOUT,    TBSTATE_ENABLED, BTNS_AUTOSIZE, { 0, 0 }, 0, 7 }
 };
 
-CMainFrame::CMainFrame(void)
+CMainFrame::CMainFrame(void) : m_DnLdr(_T("Microsoft-Symbol-Server/6.9.0003.113"))
 {
     LAppModule *theApp = LAppModule::GetApp();
 
@@ -221,6 +223,26 @@ void CMainFrame::DelExpItem(__in LIterator it)
     m_lstHistory.Remove(it);
 }
 
+void CMainFrame::Open(__in LPCWSTR pszPdbFile)
+{
+    ClearExpItem();
+    m_vDetail.Clear();
+    if (m_dia.OpenPDB(pszPdbFile))
+    {
+        m_status.SetText(0, _T("正在扫描..."));
+        m_status.SetText(1, pszPdbFile);
+        Refresh();
+        CheckCommandState();
+        LString str;
+        str.Format(_T("共有 %d 个符号"), m_cbSymbols.GetCount());
+        m_status.SetText(0, str);
+    }
+    else
+    {
+        MessageBox(_T("打开PDB文件失败！"), _T("错误"), MB_ICONSTOP);
+    }
+}
+
 void CMainFrame::Refresh(void)
 {
     m_cbSymbols.ResetContent();
@@ -254,6 +276,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct, BOOL& bHandled)
     m_tb.AddString(_T("整理"));
     m_tb.AddString(_T("设置"));
     m_tb.AddString(_T("关于"));
+    m_tb.AddString(_T("下载"));
     m_tb.AddButtons(TB_BTN_COUNT, g_btns);
     m_tb.AutoSize();
     m_tb.GetSizeRect(&rcToolBar);
@@ -297,7 +320,6 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct, BOOL& bHandled)
     DragAcceptFiles(m_hWnd, TRUE);
 
     m_status.SetText(0, _T("未打开文件"));
-    m_vDetail.EnableWindow(FALSE);
     CheckCommandState();
     return 0;
 }
@@ -311,25 +333,7 @@ void CMainFrame::OnDropFiles(HDROP hDropInfo, BOOL& bHandled)
 {
     WCHAR szFile[MAX_PATH];
     if (0 < DragQueryFileW(hDropInfo, 0, szFile, MAX_PATH))
-    {
-        ClearExpItem();
-        m_vDetail.EnableWindow();
-        m_vDetail.Clear();
-        if (m_dia.OpenPDB(szFile))
-        {
-            m_status.SetText(0, _T("正在扫描..."));
-            m_status.SetText(1, szFile);
-            Refresh();
-            CheckCommandState();
-            LString str;
-            str.Format(_T("共有 %d 个符号"), m_cbSymbols.GetCount());
-            m_status.SetText(0, str);
-        }
-        else
-        {
-            MessageBox(_T("打开PDB文件失败！"), _T("错误"), MB_ICONSTOP);
-        }
-    }
+        Open(szFile);
     DragFinish(hDropInfo);
 }
 
@@ -371,6 +375,7 @@ void CMainFrame::ProcessCommandMessage(WORD wNotifyCode, WORD wID,
     case ID_OPEN:       OnOpen();       break;
     case ID_SAVE:       OnSave();       break;
     case ID_SETTING:    OnSetting();    break;
+    case ID_DOWNLOAD:   OnDownLoad();   break;
     default:
         bHandled = FALSE;
     }
@@ -463,25 +468,7 @@ void CMainFrame::OnOpen(void)
 {
     LFileDialogW dlg(TRUE, L"*.pdb\0*.pdb\0\0", L"*.pdb");
     if (dlg.DoModal(m_hWnd))
-    {
-        ClearExpItem();
-        m_vDetail.EnableWindow();
-        m_vDetail.Clear();
-        if (m_dia.OpenPDB(dlg.m_szFileName))
-        {
-            m_status.SetText(0, _T("正在扫描..."));
-            m_status.SetText(1, dlg.m_szFileName);
-            Refresh();
-            CheckCommandState();
-            LString str;
-            str.Format(_T("共有 %d 个符号"), m_cbSymbols.GetCount());
-            m_status.SetText(0, str);
-        }
-        else
-        {
-            MessageBox(_T("打开PDB文件失败！"), _T("错误"), MB_ICONSTOP);
-        }
-    }
+        Open(dlg.m_szFileName);
 }
 
 void CMainFrame::OnSave(void)
@@ -512,6 +499,12 @@ void CMainFrame::OnSetting(void)
         m_ini.Save(_T("PDBExp.ini"));
 }
 
+void CMainFrame::OnDownLoad(void)
+{
+    CDownDlg dlg(&m_DnLdr, &m_ini);
+    dlg.DoModal(m_hWnd);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 IDiaSymbol* CMainFrame::OnSymbolChange(LPCWSTR pszName)
@@ -535,4 +528,9 @@ IDiaSymbol* CMainFrame::OnSymbolChange(LPCWSTR pszName)
     m_dia.DumpSymbol(pRet, dwTypeInfo, cbDumpString, this);
     AddExpItem(pRet, dwTypeInfo);
     return pRet;
+}
+
+void CMainFrame::OnNewFileDrop(LPCWSTR lpFileName)
+{
+    Open(lpFileName);
 }

@@ -10,6 +10,7 @@
 #include <stdPDL.h>
 #include <PDLAppModule.h>
 #include "DetailView.h"
+#include <Shlwapi.h>
 
 #include "resource.h"
 
@@ -23,6 +24,10 @@ void CEventHandler::OnNavigateComplete(void)
 IDiaSymbol* CEventHandler::OnSymbolChange(LPCWSTR pszName)
 {
     return NULL;
+}
+
+void CEventHandler::OnNewFileDrop(LPCWSTR lpFileName)
+{
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -166,7 +171,7 @@ BOOL CDetailView::SetEventHandler(__in CEventHandler* pEventHandler)
 int CDetailView::OnCreate(LPCREATESTRUCT lpCreateStruct, BOOL& bHandled)
 {
     CreateAxCtrl(CLSID_WebBrowser);
-    Connect(__uuidof(DWebBrowserEvents2));
+    Connect(DIID_DWebBrowserEvents2);
 
     QueryCtrl(IID_IWebBrowser2, reinterpret_cast<LPVOID*>(&m_pWB2));
 
@@ -196,8 +201,7 @@ int CDetailView::OnCreate(LPCREATESTRUCT lpCreateStruct, BOOL& bHandled)
 
     LComPtr<IDispatch> pDisp = NULL;
     m_pWB2->get_Document(&pDisp);
-    pDisp->QueryInterface(IID_IHTMLDocument2,
-        reinterpret_cast<LPVOID*>(&m_pDoc));
+    m_pDoc = queryinterface_cast<IHTMLDocument2>(pDisp);
 
     return 0;
 }
@@ -287,18 +291,25 @@ void CDetailView::BeforeNavigate2(__in IDispatch* pDisp, __in VARIANT* URL,
         return;
     }
 
+    // 复制文件名
     int len = lstrlenW(URL->bstrVal) + 1;
     LPWSTR pszSymbol = new WCHAR[len];
     ZeroMemory(pszSymbol, len * sizeof(WCHAR));
     lstrcpyW(pszSymbol, URL->bstrVal);
 
-    LPWSTR      pszSplit = wcsrchr(pszSymbol, L'?');
-    BOOL        bHandled = TRUE;
-    IDiaSymbol* pRet     = m_pEventHandler->OnSymbolChange(pszSplit + 1);
-
+    if (PathFileExistsW(pszSymbol))
+    {
+        m_pEventHandler->OnNewFileDrop(pszSymbol);
+    }
+    else
+    {
+        LPWSTR      pszSplit = wcsrchr(pszSymbol, L'?');
+        BOOL        bHandled = TRUE;
+        IDiaSymbol* pRet     = m_pEventHandler->OnSymbolChange(pszSplit + 1);
+        SetCurrentSymbol(pRet);
+    }
     delete[] pszSymbol;
     *Cancel = VARIANT_TRUE;
-    SetCurrentSymbol(pRet);
 }
 
 void CDetailView::NavigateComplete2(__in IDispatch* pDisp, __in VARIANT* URL)
