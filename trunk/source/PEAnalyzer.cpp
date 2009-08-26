@@ -125,10 +125,16 @@ SIGNTYPE CPEAnalyzer::GetSignature(__out PTSTR lpString, __out PTSTR lpPdbFile)
                 pCV->Signature.Data4[6], pCV->Signature.Data4[7],
                 pCV->dwAge);
             ret = CVSign;
+
+            PCSTR p = strrchr(pCV->pdb, '\\');
+            if (NULL != p)
+                ++p;
+            else
+                p = pCV->pdb;
 #ifdef UNICODE
-            MultiByteToWideChar(CP_ACP, 0, pCV->pdb, -1, lpPdbFile, MAX_PATH);
+            MultiByteToWideChar(CP_ACP, 0, p, -1, lpPdbFile, MAX_PATH);
 #else
-            lstrcpyA(lpPdbFile, pCV->pdb);
+            lstrcpyA(p, pCV->pdb);
 #endif // UNICODE
         }
         break;

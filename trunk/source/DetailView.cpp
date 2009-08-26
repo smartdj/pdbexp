@@ -55,7 +55,7 @@ CDetailView::CDetailView(void) : m_pEventHandler(NULL), m_pCurSymbol(NULL)
 BOOL CDetailView::Create(__in LPCRECT lpRect, __in HWND hWndParent,
                          __in UINT nID, __in LPCWSTR pszTemplate)
 {
-    return LWnd::Create(DETAILVIEW_CLASS, _T(""), WS_CHILD | WS_VISIBLE,
+    return LWindow::Create(DETAILVIEW_CLASS, _T(""), WS_CHILD | WS_VISIBLE,
         lpRect, hWndParent, nID, (LPVOID)pszTemplate);
 }
 

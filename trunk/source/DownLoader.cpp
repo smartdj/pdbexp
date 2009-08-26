@@ -103,7 +103,7 @@ DOWNERROR CDownLoader::DownLoadFile(
         return DownCannotOpenFile;
     }
 
-    BYTE buf[BUF_SIZE];
+    PBYTE buf = new BYTE[BUF_SIZE];
     DWORD dw, dwWritten;
     while (::InternetReadFile(hRequest, buf, BUF_SIZE, &dw) && dw > 0)
     {
@@ -113,6 +113,7 @@ DOWNERROR CDownLoader::DownLoadFile(
     ::CloseHandle(hFile);
     ::InternetCloseHandle(hRequest);
     ::InternetCloseHandle(hConnect);
+    delete [] buf;
     return DownOK;
 }
 
