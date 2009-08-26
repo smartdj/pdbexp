@@ -11,6 +11,7 @@
 #define IDD_DLG_MODIFY                  106
 #define IDD_DLG_SETTING                 107
 #define IDD_DLG_ABOUT                   108
+#define IDD_DLG_DOWNLOAD                109
 #define IDC_CB_SYMBOLS                  1000
 #define IDC_VIEW_DETAIL                 1001
 #define IDC_SPLITTER                    1002
@@ -27,6 +28,12 @@
 #define IDC_ST_MAIL                     1013
 #define IDC_ST_HOMEPAGE                 1014
 #define IDC_BTN_ALL                     1015
+#define IDC_EDIT_FILE                   1016
+#define IDC_BTN_BROWSE1                 1017
+#define IDC_EDIT_PDB                    1018
+#define IDC_BTN_BROWSE2                 1019
+#define IDC_BTN_DOWNLOAD                1020
+#define IDC_EDIT_INFO                   1021
 #define ID_OPEN                         40001
 #define ID_SAVE                         40002
 #define ID_COPY                         40003
@@ -37,14 +44,15 @@
 #define ID_SETTING                      40008
 #define ID_MODIFY                       40009
 #define ID_ABOUT                        40010
+#define ID_DOWNLOAD                     40011
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        109
-#define _APS_NEXT_COMMAND_VALUE         40011
-#define _APS_NEXT_CONTROL_VALUE         1016
+#define _APS_NEXT_RESOURCE_VALUE        110
+#define _APS_NEXT_COMMAND_VALUE         40012
+#define _APS_NEXT_CONTROL_VALUE         1022
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

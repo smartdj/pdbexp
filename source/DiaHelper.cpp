@@ -12,6 +12,16 @@
 #include <diacreate.h>
 #include <PDLCom.h>
 
+// 注意这里，DIA 各版本的 CLSID 是不同的
+CLSID clsidDIA[] = {
+    // DIA 8
+    { 0xbce36434, 0x2c24, 0x499e,
+    { 0xbf, 0x49, 0x8b, 0xd9, 0x9b, 0x0e, 0xeb, 0x68 } },
+    // DIA 9
+    { 0x4c41678e, 0x887b, 0x4365,
+    { 0xa0, 0x9e, 0x92, 0x5d, 0x28, 0xdb, 0x33, 0xc2 } }
+};
+
 typedef struct _tagDumpParam {
     DumpEvent pfnCallBack;
     LPVOID    pParam;
@@ -41,10 +51,17 @@ CDiaHelper::~CDiaHelper(void)
 
 BOOL CDiaHelper::InitDia(void)
 {
-    HRESULT hr = ::CoCreateInstance(__uuidof(DiaSourceAlt), NULL,
-        CLSCTX_INPROC_SERVER, __uuidof(IDiaDataSource),
-        reinterpret_cast<LPVOID*>(&m_ds));
-    return SUCCEEDED(hr);
+    HRESULT hr;
+    for (int i = 0; i < sizeof(clsidDIA) / sizeof(GUID); ++i)
+    {
+        m_ds = NULL;
+        hr = ::CoCreateInstance(clsidDIA[i], NULL,
+            CLSCTX_INPROC_SERVER, __uuidof(IDiaDataSource),
+            reinterpret_cast<LPVOID*>(&m_ds));
+        if (SUCCEEDED(hr))
+            return TRUE;
+    }
+    return FALSE;
 }
 
 BOOL CDiaHelper::OpenPDB(LPCWSTR lpPdbFile)
