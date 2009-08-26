@@ -7,16 +7,14 @@
 // ËµÃ÷£º    PDB Explorer ComboBoxÀà
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef PDBEXP_CMBEX
-#define PDBEXP_CMBEX
-
 #pragma once
 
-#include <PDLWindow.h>
-#include <PDLCtrl.h>
+#include <pdl_window.h>
+#include <pdl_ctrl.h>
 
 class CLbEx : public LListBox, protected LSubclassWnd
 {
+    PDL_DECLARE_WINCLASS(CLbEx)
 public:
     CLbEx& operator=(__in HWND hWnd);
 protected:
@@ -25,19 +23,17 @@ protected:
 
 class CCmbEx : public LComboBox, protected LSubclassWnd
 {
+    PDL_DECLARE_WINCLASS(CCmbEx)
 public:
-    BOOL Create(__in LPCTSTR lpWindowName, __in DWORD dwStyle,
+    BOOL Create(__in PCTSTR lpWindowName, __in DWORD dwStyle,
         __in LPCRECT lpRect, __in HWND hWndParent, __in UINT nID,
-        __in LPVOID lpParam);
+        __in PVOID lpParam);
 public:
     int FindString(__in LPCTSTR lpszString);
 protected:
     void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags, BOOL& bHandled);
-    void ProcessCommandMessage(WORD wNotifyCode, WORD wID, HWND hWndCtrl,
-        BOOL& bHandled);
+    void OnCommand(WORD wNotifyCode, WORD wID, HWND hWndCtrl, BOOL& bHandled);
 private:
     CLbEx m_list;
     LEdit m_edit;
 };
-
-#endif // PDBEXP_CMBEX

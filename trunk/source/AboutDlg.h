@@ -7,19 +7,17 @@
 // 说明：    关于对话框
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef PDBEXP_ABOUTDLG
-#define PDBEXP_ABOUTDLG
+#pragma once
 
-#include <PDLWindow.h>
-#include <PDLCtrlExt.h>
+#include <pdl_window.h>
+#include <pdl_ctrlext.h>
 
 class CAboutDlg : public LDialog
 {
 public:
     CAboutDlg(void);
 private:
-    void ProcessCommandMessage(WORD wNotifyCode, WORD wID, HWND hWndCtrl,
-        BOOL& bHandled);
+    void OnCommand(WORD wNotifyCode, WORD wID, HWND hWndCtrl, BOOL& bHandled);
     void OnHomePage(void);
     void OnMail(void);
     void OnOk(void);
@@ -30,5 +28,3 @@ private:
     LHyperLink m_stHome;
     LHyperLink m_stMail;
 };
-
-#endif // PDBEXP_ABOUTDLG

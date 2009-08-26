@@ -7,13 +7,21 @@
 // 说明：    版本说明
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef PDBEXP_VERSION
-#define PDBEXP_VERSION
+#pragma once
 
-#define PDBEXP_WNDCAPTION           _T("PDB Explorer v1.03.039")
+#define BLDNUM  "0217"
+#define PDBEXP_WNDCAPTION           _T("PDB Explorer v1.10.")##_T(BLDNUM)
 
 ///////////////////////////////////////////////////////////////////////////////
 // 升级记录
+// v1.10.0217 - 2009.07.27
+//            * PDL Version: 0.01.108
+//            * SVN Version: 79
+//            * 开源版本。
+//            * 增加对 typedef 和 class 的支持。
+//            * 下载 PDB 增加对 NB10 签名的支持。
+//            * 将数据类型抽象为 CSym 及各个子类。
+//            * 修正枚举类型的 bug。
 // v1.03.039 - 2009.04.15
 //           * PDL Version: 78
 //           * 优化了代码的大小。
@@ -33,5 +41,3 @@
 //           * 只支持 struct、union 和 enum。
 //           * 支持整理功能。
 ///////////////////////////////////////////////////////////////////////////////
-
-#endif // PDBEXP_VERSION

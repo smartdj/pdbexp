@@ -7,7 +7,7 @@
 // 说明：    文件下载类实现
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <stdPDL.h>
+#include <pdl_base.h>
 #include "DownLoader.h"
 
 #define BUF_SIZE    4096

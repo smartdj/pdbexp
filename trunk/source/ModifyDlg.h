@@ -7,28 +7,25 @@
 // 说明：    整理对话框
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef PDBEXP_MODIFYDLG
-#define PDBEXP_MODIFYDLG
+#pragma once
 
-#include <PDLWindow.h>
-#include <PDLComCtl.h>
+#include <pdl_window.h>
+#include <pdl_commctrl.h>
 #include "DiaHelper.h"
 #include "DetailView.h"
 
 class CModifyDlg : public LDialog, private CEventHandler
 {
 public:
-    CModifyDlg(CDiaHelper* pDia, IDiaSymbol* pSymbol, DWORD_PTR dwTypeInfo);
+    CModifyDlg(CDiaHelper* pDia, IDiaSymbol* pSymbol);
 private:
     static BOOL cbAddMember(IDiaSymbol* pCurSymbol, LPVOID pParam);
-    static void cbDumpString(LPCWSTR pszString, LPVOID pParam);
-    static BOOL cbEnumModify(int index, LPVOID pParam);
+    static BOOL cbEnumModify(IDiaSymbol* pCurSymbol, LPVOID pParam);
     void DumpModified(void);
 private:
-    LRESULT ProcessNotifyMessage(int idCtrl, LPNMHDR pnmh, BOOL& bHandled);
+    LRESULT OnNotify(int idCtrl, LPNMHDR pnmh, BOOL& bHandled);
 private:
-    void ProcessCommandMessage(WORD wNotifyCode, WORD wID, HWND hWndCtrl,
-        BOOL& bHandled);
+    void OnCommand(WORD wNotifyCode, WORD wID, HWND hWndCtrl, BOOL& bHandled);
     void OnBtnAll(void);
     void OnBtnCopy(void);
 private:
@@ -37,12 +34,9 @@ private:
 private:
     void OnNavigateComplete(void);
 private:
-    LListView   m_list;
+    LListView m_list;
     CDetailView m_view;
     IDiaSymbol* m_pSymbol;
-    DWORD_PTR   m_dwTypeInfo;
     CDiaHelper* m_pDia;
-    BOOL        m_bInited;
+    BOOL m_bInited;
 };
-
-#endif // PDBEXP_MODIFYDLG

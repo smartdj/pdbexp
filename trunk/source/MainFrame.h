@@ -7,36 +7,35 @@
 // 说明：    主框架窗口类
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef PDBEXP_MAINFRAME
-#define PDBEXP_MAINFRAME
+#pragma once
 
 #include "CmbEx.h"
-#include <PDLCtrlExt.h>
-#include <PDLComCtl.h>
-#include <PDLParser.h>
-#include <PDLContainer.h>
+#include <pdl_ctrlext.h>
+#include <pdl_commctrl.h>
+#include <pdl_parser.h>
+#include <pdl_container.h>
 #include "DetailView.h"
 #include "DiaHelper.h"
 #include "DownLoader.h"
 
 typedef struct _tagExpInfo {
     IDiaSymbol* pSymbol;
-    DWORD_PTR   dwTypeInfo;
 } EXPINFO, *PEXPINFO;
 
 class CMainFrame : public LWindow, private CEventHandler
 {
 public:
-    CMainFrame(void);
+    CMainFrame(__in LPWNDCLASS wc);
     ~CMainFrame(void);
 private:
-    void AddExpItem(__in IDiaSymbol* pSymbol, __in DWORD_PTR dwTypeInfo);
+    void AddExpItem(__in IDiaSymbol* pSymbol);
     static BOOL cbAddEnum(IDiaSymbol* pCurSymbol, LPVOID pParam);
+    static BOOL cbAddTypedef(IDiaSymbol* pCurSymbol, LPVOID pParam);
     static BOOL cbAddUDT(IDiaSymbol* pCurSymbol, LPVOID pParam);
     static void cbDumpString(LPCWSTR pszString, LPVOID pParam);
     void CheckCommandState(void);
-    void ClearExpItem(void);
-    void DelExpItem(__in LIterator it);
+    static void DestroyExpItem(PVOID ptr);
+    void DumpSymbol(__in IDiaSymbol* pSymbol);
     void Open(__in LPCWSTR pszPdbFile);
     void Refresh(void);
 private:
@@ -45,8 +44,7 @@ private:
     void OnDropFiles(HDROP hDropInfo, BOOL& bHandled);
     void OnSize(UINT nType, int cx, int cy, BOOL& bHandled);
 private:
-    void ProcessCommandMessage(WORD wNotifyCode, WORD wID, HWND hWndCtrl,
-        BOOL& bHandled);
+    void OnCommand(WORD wNotifyCode, WORD wID, HWND hWndCtrl, BOOL& bHandled);
     void OnAbout(void);
     void OnBack(void);
     void OnCopy(void);
@@ -60,22 +58,20 @@ private:
     void OnSetting(void);
     void OnDownLoad(void);
 private:
-    IDiaSymbol* OnSymbolChange(LPCWSTR pszName);
+    void OnSymbolChange(DWORD id);
     void OnNewFileDrop(LPCWSTR lpFileName);
 private:
-    HFONT                m_hFont;
-    LToolBar             m_tb;
-    LImageList           m_iml;
-    CCmbEx               m_cbSymbols;
-    CDetailView          m_vDetail;
-    LSplitter            m_split;
-    LStatusBar           m_status;
-    CDiaHelper           m_dia;
-    LIniParser           m_ini;
-    LDoubleList<EXPINFO> m_lstHistory;
-    LIterator            m_itCurrent;
-    int                  m_nMaxHistory;
-    CDownLoader          m_DnLdr;
+    HFONT m_hFont;
+    LToolBar m_tb;
+    LImageList m_iml;
+    CCmbEx m_cbSymbols;
+    CDetailView m_vDetail;
+    LSplitter m_split;
+    LStatusBar m_status;
+    CDiaHelper m_dia;
+    LIniParser m_ini;
+    LPtrList m_lstHistory;
+    LIterator m_itCurrent;
+    int m_nMaxHistory;
+    CDownLoader m_DnLdr;
 };
-
-#endif // PDBEXP_MAINFRAME

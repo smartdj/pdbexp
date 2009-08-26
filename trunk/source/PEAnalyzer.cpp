@@ -7,10 +7,16 @@
 // 说明：    PE 分析器实现
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <stdPDL.h>
+#include <pdl_base.h>
 #include "PEAnalyzer.h"
 
-#define CONVERT(Type, Base, Offset) (Type)((DWORD_PTR)(Base) + (Offset))
+typedef struct _tagCV_NB10 {
+    DWORD dwHeader;
+    DWORD dwOffset;
+    DWORD dwTimeStamp;
+    DWORD dwAge;
+    CHAR pdb[1];
+} CV_NB10, *PCV_NB10;
 
 typedef struct _tagCV_RSDS {
     DWORD dwHeader;
@@ -81,7 +87,7 @@ BOOL CPEAnalyzer::IsPE(void)
     if ('ZM' != pDosHdr->e_magic)
         return FALSE;
 
-    PIMAGE_NT_HEADERS pNtHdr = CONVERT(PIMAGE_NT_HEADERS, m_pvBase,
+    PIMAGE_NT_HEADERS pNtHdr = offset_cast<PIMAGE_NT_HEADERS>(m_pvBase,
         pDosHdr->e_lfanew);
     if (0x00004550 == pNtHdr->Signature) // 'PE\0\0'
         return TRUE;
@@ -96,7 +102,7 @@ SIGNTYPE CPEAnalyzer::GetSignature(__out PTSTR lpString, __out PTSTR lpPdbFile)
 
     // PE Header
     PIMAGE_DOS_HEADER pDosHdr = (PIMAGE_DOS_HEADER)m_pvBase;
-    PIMAGE_NT_HEADERS pNtHdr = CONVERT(PIMAGE_NT_HEADERS, m_pvBase,
+    PIMAGE_NT_HEADERS pNtHdr = offset_cast<PIMAGE_NT_HEADERS>(m_pvBase,
         pDosHdr->e_lfanew);
 
     // Debug Directory
@@ -110,34 +116,59 @@ SIGNTYPE CPEAnalyzer::GetSignature(__out PTSTR lpString, __out PTSTR lpPdbFile)
     {
     case IMAGE_DEBUG_TYPE_CODEVIEW:
         {
-            PCV_RSDS pCV = (PCV_RSDS)RvaToRaw(pDebugDir->AddressOfRawData);
-            if ('SDSR' != pCV->dwHeader)
-                break;
+            PCSTR lpFile = NULL;
+            if (0 != pDebugDir->AddressOfRawData)
+            {
+                PCV_RSDS pCV = (PCV_RSDS)RvaToRaw(pDebugDir->AddressOfRawData);
+                if (NULL == pCV || 'SDSR' != pCV->dwHeader)
+                    break;
 
-            wsprintf(lpString,
-                _T("%08X%04X%04X%02X%02X%02X%02X%02X%02X%02X%02X%X"),
-                pCV->Signature.Data1,
-                pCV->Signature.Data2,
-                pCV->Signature.Data3,
-                pCV->Signature.Data4[0], pCV->Signature.Data4[1],
-                pCV->Signature.Data4[2], pCV->Signature.Data4[3],
-                pCV->Signature.Data4[4], pCV->Signature.Data4[5],
-                pCV->Signature.Data4[6], pCV->Signature.Data4[7],
-                pCV->dwAge);
+                wsprintf(lpString,
+                    _T("%08X%04X%04X%02X%02X%02X%02X%02X%02X%02X%02X%X"),
+                    pCV->Signature.Data1,
+                    pCV->Signature.Data2,
+                    pCV->Signature.Data3,
+                    pCV->Signature.Data4[0], pCV->Signature.Data4[1],
+                    pCV->Signature.Data4[2], pCV->Signature.Data4[3],
+                    pCV->Signature.Data4[4], pCV->Signature.Data4[5],
+                    pCV->Signature.Data4[6], pCV->Signature.Data4[7],
+                    pCV->dwAge);
+
+                lpFile = strrchr(pCV->pdb, '\\');
+                if (NULL != lpFile)
+                    ++lpFile;
+                else
+                    lpFile = pCV->pdb;
+            }
+            else if (0 != pDebugDir->PointerToRawData)
+            {
+                PCV_NB10 pNB = offset_cast<PCV_NB10>(m_pvBase,
+                    pDebugDir->PointerToRawData);
+                if ('01BN' != pNB->dwHeader)
+                    break;
+
+                wsprintf(lpString, _T("%08X%X"), pNB->dwTimeStamp, pNB->dwAge);
+                lpFile = strrchr(pNB->pdb, '\\');
+                if (NULL != lpFile)
+                    ++lpFile;
+                else
+                    lpFile = pNB->pdb;
+            }
+
             ret = CVSign;
-
-            PCSTR p = strrchr(pCV->pdb, '\\');
-            if (NULL != p)
-                ++p;
-            else
-                p = pCV->pdb;
 #ifdef UNICODE
-            MultiByteToWideChar(CP_ACP, 0, p, -1, lpPdbFile, MAX_PATH);
+            MultiByteToWideChar(CP_ACP, 0, lpFile, -1, lpPdbFile, MAX_PATH);
 #else
             lstrcpyA(p, pCV->pdb);
 #endif // UNICODE
         }
         break;
+    case IMAGE_DEBUG_TYPE_MISC:
+        {
+            // TODO:
+        }
+        break;
+
     }
     return ret;
 }
@@ -145,7 +176,7 @@ SIGNTYPE CPEAnalyzer::GetSignature(__out PTSTR lpString, __out PTSTR lpPdbFile)
 PVOID CPEAnalyzer::RvaToRaw(__in DWORD dwRva)
 {
     PIMAGE_DOS_HEADER pDosHdr = (PIMAGE_DOS_HEADER)m_pvBase;
-    PIMAGE_NT_HEADERS pNtHdr = CONVERT(PIMAGE_NT_HEADERS, m_pvBase,
+    PIMAGE_NT_HEADERS pNtHdr = offset_cast<PIMAGE_NT_HEADERS>(m_pvBase,
         pDosHdr->e_lfanew);
 
     PIMAGE_SECTION_HEADER pSecHdr = IMAGE_FIRST_SECTION(pNtHdr);

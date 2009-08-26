@@ -7,9 +7,9 @@
 // 说明：    设置对话框实现
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <stdPDL.h>
+#include <pdl_base.h>
 #include "SettingDlg.h"
-#include <PDLComDlg.h>
+#include <pdl_comdlg.h>
 
 #include "resource.h"
 
@@ -20,8 +20,11 @@ CSettingDlg::CSettingDlg(__in LIniParser* pIni) : LDialog(IDD_DLG_SETTING)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void CSettingDlg::ProcessCommandMessage(WORD wNotifyCode, WORD wID,
-                                        HWND hWndCtrl, BOOL& bHandled)
+void CSettingDlg::OnCommand(
+    WORD wNotifyCode,
+    WORD wID,
+    HWND hWndCtrl,
+    BOOL& bHandled)
 {
     switch (wID)
     {

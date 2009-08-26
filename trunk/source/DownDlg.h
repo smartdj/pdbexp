@@ -7,12 +7,11 @@
 // 说明：    下载对话框
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef PDBEXP_DOWNDLG
-#define PDBEXP_DOWNDLG
+#pragma once
 
-#include <PDLWindow.h>
-#include <PDLCtrl.h>
-#include <PDLParser.h>
+#include <pdl_window.h>
+#include <pdl_ctrl.h>
+#include <pdl_parser.h>
 #include "DownLoader.h"
 #include "PEAnalyzer.h"
 
@@ -25,8 +24,7 @@ private:
     void AddInfo(__in PCTSTR lpInfo);
     void ClearInfo(void);
 private:
-    void ProcessCommandMessage(WORD wNotifyCode, WORD wID, HWND hWndCtrl,
-        BOOL& bHandled);
+    void OnCommand(WORD wNotifyCode, WORD wID, HWND hWndCtrl, BOOL& bHandled);
     void OnEditUpdate(WORD wID);
     void OnBtnOpen1(void);
     void OnBtnOpen2(void);
@@ -43,5 +41,3 @@ private:
     LPTSTR m_pSign;
     LPTSTR m_pFile;
 };
-
-#endif // PDBEXP_DOWNDLG

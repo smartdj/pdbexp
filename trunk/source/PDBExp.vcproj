@@ -18,13 +18,15 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)bin"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
 			CharacterSet="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
+				CommandLine="BuildInc $(ProjectDir)Version.h&#x0D;&#x0A;"
+				ExcludedFromBuild="false"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -65,13 +67,13 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="comctl32.lib shlwapi.lib Wininet.lib PDL_CrtEntry_x86_win32U.lib PDL_x86_win32.lib diaguids.lib"
-				OutputFile="..\Bin\PDBExp.exe"
+				AdditionalDependencies="comctl32.lib Wininet.lib diaguids.lib pdl.lib"
+				OutputFile="$(OutDir)\$(ProjectName).exe"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="&quot;$(VSInstallDir)\DIA SDK\lib&quot;"
 				GenerateManifest="false"
 				ManifestFile=""
-				IgnoreAllDefaultLibraries="true"
+				IgnoreAllDefaultLibraries="false"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				RandomizedBaseAddress="1"
@@ -104,7 +106,7 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)bin"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
 			CharacterSet="1"
@@ -112,6 +114,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
+				CommandLine="BuildInc $(ProjectDir)Version.h&#x0D;&#x0A;"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -150,8 +153,96 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="comctl32.lib shlwapi.lib Wininet.lib PDL_CrtEntry_x86_win32U.lib PDL_x86_win32.lib diaguids.lib"
-				OutputFile="..\Bin\PDBExp.exe"
+				AdditionalDependencies="comctl32.lib Wininet.lib diaguids.lib pdl.lib"
+				OutputFile="$(OutDir)\$(ProjectName).exe"
+				LinkIncremental="1"
+				AdditionalLibraryDirectories="&quot;$(VSInstallDir)\DIA SDK\lib&quot;"
+				GenerateManifest="false"
+				ManifestFile=""
+				IgnoreAllDefaultLibraries="false"
+				GenerateDebugInformation="false"
+				SubSystem="2"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
+				TargetMachine="1"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+				EmbedManifest="false"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+				CommandLine=""
+			/>
+		</Configuration>
+		<Configuration
+			Name="Release CRT|Win32"
+			OutputDirectory="$(SolutionDir)bin"
+			IntermediateDirectory="$(ConfigurationName)"
+			ConfigurationType="1"
+			CharacterSet="1"
+			WholeProgramOptimization="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+				CommandLine="BuildInc $(ProjectDir)Version.h&#x0D;&#x0A;"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				AdditionalIncludeDirectories="&quot;$(VSInstallDir)\DIA SDK\include&quot;"
+				PreprocessorDefinitions="_WIN32_WINNT=0x0501"
+				ExceptionHandling="0"
+				RuntimeLibrary="0"
+				BufferSecurityCheck="false"
+				RuntimeTypeInfo="false"
+				UsePrecompiledHeader="0"
+				WarningLevel="3"
+				SuppressStartupBanner="true"
+				Detect64BitPortabilityProblems="false"
+				DebugInformationFormat="0"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="comctl32.lib Wininet.lib diaguids.lib pdl.lib pdl_crt.lib pdl_crt_entry_u.lib"
+				OutputFile="$(OutDir)\$(ProjectName).exe"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="&quot;$(VSInstallDir)\DIA SDK\lib&quot;"
 				GenerateManifest="false"
@@ -242,6 +333,10 @@
 				RelativePath=".\SettingDlg.cpp"
 				>
 			</File>
+			<File
+				RelativePath=".\SymWrap.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -258,6 +353,10 @@
 			</File>
 			<File
 				RelativePath=".\DetailView.h"
+				>
+			</File>
+			<File
+				RelativePath=".\diacommon.h"
 				>
 			</File>
 			<File
@@ -290,6 +389,10 @@
 			</File>
 			<File
 				RelativePath=".\SettingDlg.h"
+				>
+			</File>
+			<File
+				RelativePath=".\SymWrap.h"
 				>
 			</File>
 			<File
