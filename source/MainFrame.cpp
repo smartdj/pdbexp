@@ -411,10 +411,11 @@ void CMainFrame::OnBack(void)
 {
     if (m_itCurrent != m_lstHistory.GetHeadIterator())
     {
-        m_lstHistory.GetPrevIterator(&m_itCurrent);
-        PEXPINFO info = (PEXPINFO)m_lstHistory.GetAt(m_itCurrent);
+        m_itCurrent = m_lstHistory.GetPrevIterator(m_itCurrent);
 
-        DumpSymbol(info->pSymbol);
+        EXPINFO info;
+        m_lstHistory.GetAt(m_itCurrent, &info);
+        DumpSymbol(info.pSymbol);
     }
     CheckCommandState();
 }
@@ -447,8 +448,9 @@ void CMainFrame::OnModify(void)
     LStringW strTemplate;
     m_ini.GetString("Setting", "Template", L"", &strTemplate);
 
-    PEXPINFO info = (PEXPINFO)m_lstHistory.GetAt(m_itCurrent);
-    CModifyDlg dlg(&m_dia, info->pSymbol);
+    EXPINFO info;
+    m_lstHistory.GetAt(m_itCurrent, &info);
+    CModifyDlg dlg(&m_dia, info.pSymbol);
     dlg.DoModal(m_hWnd, (LPARAM)strTemplate.Detach());
 }
 
@@ -456,9 +458,10 @@ void CMainFrame::OnNext(void)
 {
     if (m_itCurrent != m_lstHistory.GetTailIterator())
     {
-        m_lstHistory.GetNextIterator(&m_itCurrent);
-        PEXPINFO info = (PEXPINFO)m_lstHistory.GetAt(m_itCurrent);
-        DumpSymbol(info->pSymbol);
+        m_itCurrent = m_lstHistory.GetNextIterator(m_itCurrent);
+        EXPINFO info;
+        m_lstHistory.GetAt(m_itCurrent, &info);
+        DumpSymbol(info.pSymbol);
     }
     CheckCommandState();
 }
