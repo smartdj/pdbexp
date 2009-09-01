@@ -9,8 +9,8 @@
 
 #pragma once
 
-#define BLDNUM  "0217"
-#define PDBEXP_WNDCAPTION           _T("PDB Explorer v1.10.")##_T(BLDNUM)
+#define BLDNUM  "0224"
+#define PDBEXP_WNDCAPTION           _T("PDB Explorer v1.11.")##_T(BLDNUM)
 
 ///////////////////////////////////////////////////////////////////////////////
 // Éý¼¶¼ÇÂ¼
