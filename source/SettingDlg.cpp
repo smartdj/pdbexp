@@ -20,6 +20,12 @@ CSettingDlg::CSettingDlg(__in LIniParser* pIni) : LDialog(IDD_DLG_SETTING)
 
 ///////////////////////////////////////////////////////////////////////////////
 
+PDL_BEGIN_MSGMAP(CSettingDlg)
+    PROCESS_CLOSE(OnClose)
+    PROCESS_COMMAND(OnCommand)
+    PROCESS_INITDIALOG(OnInitDialog)
+PDL_END_MSGMAP(LDialog)
+
 void CSettingDlg::OnCommand(
     WORD wNotifyCode,
     WORD wID,

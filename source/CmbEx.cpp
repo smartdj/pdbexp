@@ -19,6 +19,10 @@ CLbEx& CLbEx::operator=(__in HWND hWnd)
     return *this;
 }
 
+PDL_BEGIN_MSGMAP(CLbEx)
+    PROCESS_LBUTTONDBLCLK(OnLButtonDblClk)
+PDL_END_MSGMAP(LSubclassWnd)
+
 void CLbEx::OnLButtonDblClk(UINT uFlags, int x, int y, BOOL& bHandled)
 {
     ::SendMessage(GetParent(), WM_COMMAND, IDOK, (LPARAM)m_hWnd);
@@ -49,6 +53,11 @@ int CCmbEx::FindString(__in LPCTSTR lpszString)
     // FindString调用ListBox的实现，因为系统默认的函数竟会自动创建找不到的项目
     return m_list.FindString(0, lpszString);
 }
+
+PDL_BEGIN_MSGMAP(CCmbEx)
+    PROCESS_COMMAND(OnCommand)
+    PROCESS_KEYDOWN(OnKeyDown)
+PDL_END_MSGMAP(LSubclassWnd)
 
 void CCmbEx::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags, BOOL& bHandled)
 {

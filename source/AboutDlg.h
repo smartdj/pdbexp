@@ -17,13 +17,13 @@ class CAboutDlg : public LDialog
 public:
     CAboutDlg(void);
 private:
-    void OnCommand(WORD wNotifyCode, WORD wID, HWND hWndCtrl, BOOL& bHandled);
+    PDL_DECLARE_MSGMAP();
+    DECLARE_COMMAND_HANDLER(OnCommand);
+    DECLARE_INITDIALOG_HANDLER(OnInitDialog);
+    DECLARE_LBUTTONDOWN_HANDLER(OnLButtonDown);
     void OnHomePage(void);
     void OnMail(void);
     void OnOk(void);
-private:
-    BOOL OnInitDialog(HWND hCtrlFocus, LPARAM lParam, BOOL& bHandled);
-    void OnLButtonDown(UINT uFlags, int x, int y, BOOL& bHandled);
 private:
     LHyperLink m_stHome;
     LHyperLink m_stMail;

@@ -18,7 +18,8 @@ class CLbEx : public LListBox, protected LSubclassWnd
 public:
     CLbEx& operator=(__in HWND hWnd);
 protected:
-    void OnLButtonDblClk(UINT uFlags, int x, int y, BOOL& bHandled);
+    PDL_DECLARE_MSGMAP();
+    DECLARE_LBUTTONDBLCLK_HANDLER(OnLButtonDblClk);
 };
 
 class CCmbEx : public LComboBox, protected LSubclassWnd
@@ -31,8 +32,9 @@ public:
 public:
     int FindString(__in LPCTSTR lpszString);
 protected:
-    void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags, BOOL& bHandled);
-    void OnCommand(WORD wNotifyCode, WORD wID, HWND hWndCtrl, BOOL& bHandled);
+    PDL_DECLARE_MSGMAP();
+    DECLARE_COMMAND_HANDLER(OnCommand);
+    DECLARE_KEYDOWN_HANDLER(OnKeyDown);
 private:
     CLbEx m_list;
     LEdit m_edit;

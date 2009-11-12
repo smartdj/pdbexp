@@ -142,6 +142,11 @@ BOOL CDetailView::SetEventHandler(__in CEventHandler* pEventHandler)
 
 ///////////////////////////////////////////////////////////////////////////////
 
+PDL_BEGIN_MSGMAP(CDetailView)
+    PROCESS_CREATE(OnCreate)
+    PROCESS_DESTROY(OnDestroy)
+PDL_END_MSGMAP(LAxCtrl)
+
 int CDetailView::OnCreate(LPCREATESTRUCT lpCreateStruct, BOOL& bHandled)
 {
     CreateAxCtrl(CLSID_WebBrowser);

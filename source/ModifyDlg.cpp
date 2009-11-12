@@ -144,21 +144,23 @@ void CModifyDlg::DumpModified(void)
 
 ///////////////////////////////////////////////////////////////////////////////
 
+PDL_BEGIN_MSGMAP(CModifyDlg)
+    PROCESS_CLOSE(OnClose)
+    PROCESS_COMMAND(OnCommand)
+    PROCESS_INITDIALOG(OnInitDialog)
+    PROCESS_NOTIFY(OnNotify)
+PDL_END_MSGMAP(LDialog)
+
 LRESULT CModifyDlg::OnNotify(
     int idCtrl,
     LPNMHDR pnmh,
     BOOL& bHandled)
 {
     if (m_bInited && LVN_ITEMCHANGED == pnmh->code && IDC_LIST == pnmh->idFrom)
-    {
         DumpModified();
-        return 0;
-    }
     else
-    {
         bHandled = FALSE;
-        return LDialog::OnNotify(idCtrl, pnmh, bHandled);
-    }
+    return 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -231,8 +233,8 @@ BOOL CModifyDlg::OnInitDialog(HWND hCtrlFocus, LPARAM lParam, BOOL& bHandled)
     m_list.InsertColumn(0, _T("Ãû³Æ"), 260);
     m_list.InsertColumn(1, _T("Æ«ÒÆ"), 70);
     m_list.InsertColumn(2, _T("´óÐ¡"), 70);
-    m_list.SetExtendedListViewStyle(LVS_EX_GRIDLINES | LVS_EX_CHECKBOXES
-        | LVS_EX_FULLROWSELECT);
+    DWORD dw = LVS_EX_GRIDLINES | LVS_EX_CHECKBOXES | LVS_EX_FULLROWSELECT;
+    m_list.SetExtendedListViewStyle(dw, dw);
     CSym::Enum(m_pSymbol, SymTagData, cbAddMember, this);
 
     LWnd wndRect = GetDlgItem(IDC_ST_RECT);
