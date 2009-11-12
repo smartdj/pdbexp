@@ -18,13 +18,12 @@ class CSettingDlg : public LDialog
 public:
     CSettingDlg(__in LIniParser* pIni);
 private:
-    void OnCommand(WORD wNotifyCode, WORD wID, HWND hWndCtrl,
-        BOOL& bHandled);
+    PDL_DECLARE_MSGMAP();
+    DECLARE_COMMAND_HANDLER(OnCommand);
+    DECLARE_CLOSE_HANDLER(OnClose);
+    DECLARE_INITDIALOG_HANDLER(OnInitDialog);
     void OnOk(void);
     void OnOpen(void);
-private:
-    void OnClose(BOOL& bHandled);
-    BOOL OnInitDialog(HWND hCtrlFocus, LPARAM lParam, BOOL& bHandled);
 private:
     LIniParser* m_pIni;
     LUpDown     m_spin;

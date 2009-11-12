@@ -23,14 +23,13 @@ private:
     static BOOL cbEnumModify(IDiaSymbol* pCurSymbol, LPVOID pParam);
     void DumpModified(void);
 private:
-    LRESULT OnNotify(int idCtrl, LPNMHDR pnmh, BOOL& bHandled);
-private:
-    void OnCommand(WORD wNotifyCode, WORD wID, HWND hWndCtrl, BOOL& bHandled);
+    PDL_DECLARE_MSGMAP();
+    DECLARE_CLOSE_HANDLER(OnClose);
+    DECLARE_COMMAND_HANDLER(OnCommand);
+    DECLARE_INITDIALOG_HANDLER(OnInitDialog);
+    DECLARE_NOTIFY_HANDLER(OnNotify);
     void OnBtnAll(void);
     void OnBtnCopy(void);
-private:
-    void OnClose(BOOL& bHandled);
-    BOOL OnInitDialog(HWND hCtrlFocus, LPARAM lParam, BOOL& bHandled);
 private:
     void OnNavigateComplete(void);
 private:

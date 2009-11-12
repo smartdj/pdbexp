@@ -49,6 +49,12 @@ void CDownDlg::ClearInfo(void)
 
 ///////////////////////////////////////////////////////////////////////////////
 
+PDL_BEGIN_MSGMAP(CDownDlg)
+    PROCESS_CLOSE(OnClose)
+    PROCESS_COMMAND(OnCommand)
+    PROCESS_INITDIALOG(OnInitDialog)
+PDL_END_MSGMAP(LDialog)
+
 void CDownDlg::OnCommand(
     WORD wNotifyCode,
     WORD wID,

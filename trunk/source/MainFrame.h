@@ -39,12 +39,13 @@ private:
     void Open(__in LPCWSTR pszPdbFile);
     void Refresh(void);
 private:
-    int OnCreate(LPCREATESTRUCT lpCreateStruct, BOOL& bHandled);
-    void OnDestroy(BOOL& bHandled);
-    void OnDropFiles(HDROP hDropInfo, BOOL& bHandled);
-    void OnSize(UINT nType, int cx, int cy, BOOL& bHandled);
+    PDL_DECLARE_MSGMAP();
+    DECLARE_COMMAND_HANDLER(OnCommand);
+    DECLARE_CREATE_HANDLER(OnCreate);
+    DECLARE_DESTROY_HANDLER(OnDestroy);
+    DECLARE_DROPFILES_HANDLER(OnDropFiles);
+    DECLARE_SIZE_HANDLER(OnSize);
 private:
-    void OnCommand(WORD wNotifyCode, WORD wID, HWND hWndCtrl, BOOL& bHandled);
     void OnAbout(void);
     void OnBack(void);
     void OnCopy(void);

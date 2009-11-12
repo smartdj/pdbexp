@@ -269,6 +269,14 @@ void CMainFrame::Refresh(void)
 
 ///////////////////////////////////////////////////////////////////////////////
 
+PDL_BEGIN_MSGMAP(CMainFrame)
+    PROCESS_COMMAND(OnCommand)
+    PROCESS_CREATE(OnCreate)
+    PROCESS_DESTROY(OnDestroy)
+    PROCESS_DROPFILES(OnDropFiles)
+    PROCESS_SIZE(OnSize)
+PDL_END_MSGMAP(LWindow)
+
 int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct, BOOL& bHandled)
 {
     LAppModule *theApp = LAppModule::GetApp();
@@ -296,7 +304,13 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct, BOOL& bHandled)
     m_tb.AddString(_T("下载"));
     m_tb.AddButtons(TB_BTN_COUNT, g_btns);
     m_tb.AutoSize();
-    m_tb.GetSizeRect(&rcToolBar);
+
+    SIZE size;
+    m_tb.GetSize(&size);
+    rcToolBar.left = 0;
+    rcToolBar.top = 0;
+    rcToolBar.right = size.cx;
+    rcToolBar.bottom = size.cy;
 
     // 创建并初始化状态栏
     int nParts[] = { 200, -1 };
@@ -358,17 +372,17 @@ void CMainFrame::OnSize(UINT nType, int cx, int cy, BOOL& bHandled)
 {
     if (SIZE_MINIMIZED != nType)
     {
-        RECT rcToolBar, rcStatus;
-        m_tb.GetSizeRect(&rcToolBar);
-        m_tb.SetWindowPos(NULL, 0, 0, cx, rcToolBar.bottom,
-            SWP_NOMOVE | SWP_NOZORDER);
+        RECT rcStatus = { 0 };
+        SIZE size;
+        m_tb.GetSize(&size);
+        m_tb.SetWindowPos(NULL, 0, 0, cx, size.cy, SWP_NOMOVE | SWP_NOZORDER);
 
         m_status.GetClientRect(&rcStatus);
         m_status.SetWindowPos(NULL, 0, cy - rcStatus.bottom,
             cx, rcStatus.bottom, SWP_NOZORDER);
 
-        m_split.SetWindowPos(NULL, 0, rcToolBar.bottom,
-            cx, cy - rcStatus.bottom - rcToolBar.bottom,
+        m_split.SetWindowPos(NULL, 0, size.cy,
+            cx, cy - rcStatus.bottom - size.cy,
             SWP_NOZORDER | SWP_NOMOVE | SWP_NOREDRAW);
         m_split.Invalidate();
     }

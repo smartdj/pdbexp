@@ -20,6 +20,12 @@ CAboutDlg::CAboutDlg(void) : LDialog(IDD_DLG_ABOUT)
 
 ///////////////////////////////////////////////////////////////////////////////
 
+PDL_BEGIN_MSGMAP(CAboutDlg)
+    PROCESS_COMMAND(OnCommand)
+    PROCESS_INITDIALOG(OnInitDialog)
+    PROCESS_LBUTTONDOWN(OnLButtonDown)
+PDL_END_MSGMAP(LDialog)
+
 void CAboutDlg::OnCommand(
     WORD wNotifyCode,
     WORD wID,

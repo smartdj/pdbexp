@@ -41,8 +41,9 @@ public:
     void SetCurrentSymbol(__in IDiaSymbol* pCurSymbol);
     BOOL SetEventHandler(__in CEventHandler* pEventHandler);
 private:
-    int OnCreate(LPCREATESTRUCT lpCreateStruct, BOOL& bHandled);
-    void OnDestroy(BOOL& bHandled);
+    PDL_DECLARE_MSGMAP();
+    DECLARE_CREATE_HANDLER(OnCreate);
+    DECLARE_DESTROY_HANDLER(OnDestroy);
 private:
     // IUnknown
     HRESULT STDMETHODCALLTYPE QueryInterface(__in REFIID iid,
